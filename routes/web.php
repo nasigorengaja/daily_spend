@@ -24,3 +24,4 @@ Route::post('/create/spend', [SpendController::class, 'store'])->name('create.sp
 //edit
 Route::get('/edit/{id}', [SpendController::class, 'edit'])->name('get.edit.spend');
 Route::post('/edit/spend', [SpendController::class, 'update'])->name('post.edit.spend');
+Route::get('/get-spend-data', [SpendController::class, 'getSpendData'])->name('get.spend.data');

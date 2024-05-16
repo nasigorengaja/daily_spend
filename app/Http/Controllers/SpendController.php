@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Spend;
+use Carbon\Carbon;
+use DateTime;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class SpendController extends Controller
 {
@@ -22,7 +25,6 @@ class SpendController extends Controller
      */
     public function create()
     {
-        
     }
 
     /**
@@ -56,7 +58,7 @@ class SpendController extends Controller
      */
     public function edit(String $id)
     {
-        $spend = Spend::where('id',$id)->first();
+        $spend = Spend::where('id', $id)->first();
         return view('spend.edit', compact('spend'));
     }
 
@@ -71,8 +73,27 @@ class SpendController extends Controller
         $spend->save();
 
         return redirect('/')->with('success', 'Data Spend has been updated!');
-
     }
+
+    public function getSpendData(Request $request)
+    {
+        // $start = $request->query('start');
+        // $end = $request->query('end');
+
+        $startDate = Carbon::parse($request->start);
+        $endDate = Carbon::parse($request->end);
+
+        $startDate->addDay();
+        $endDate->addDay();
+        $end = $endDate->endOfDay();
+
+        Log::info('Fetching spend data', ['start' => $startDate, 'end' => $end]);
+
+        $spend = Spend::whereBetween('created_at', [$startDate, $end])->get();
+
+        return response()->json($spend);
+    }
+
 
     /**
      * Remove the specified resource from storage.
