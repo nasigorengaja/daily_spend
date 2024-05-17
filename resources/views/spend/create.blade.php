@@ -5,7 +5,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body>
+<body class="bg-green-200">
     <form method="POST" action="{{ route('create.spending') }}">
         @csrf
         <div class="form-group mb-4">

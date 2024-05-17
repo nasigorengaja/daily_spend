@@ -14,17 +14,17 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 
-<body>
+<body class="bg-green-200">
     <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
         <div class="mb-4">
-            Pengeluaran Harian Afvritong Hadiwijaya <br><br>
+            Pengeluaran Harian Afvrita Safara Candra <br><br>
             <a href="{{ route('create') }}" class="justify-end bg-green-500 text-white px-4 py-2 rounded">+ Tambah
                 Pengeluaran</a>
         </div>
         <div class="mb-4 flex space-x-2">
             <input id="dateRangePicker" class="block w-full p-2 border border-gray-300 rounded-md"
                 placeholder="Select date range" />
-            <button id="applyButton" class="bg-blue-500 text-white px-4 py-2 rounded">Apply</button>
+            <button id="applyButton" class="bg-green-500 text-white px-4 py-2 rounded">Apply</button>
         </div>
         <table id="spendTable" class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
