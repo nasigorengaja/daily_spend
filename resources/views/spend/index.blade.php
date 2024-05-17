@@ -17,7 +17,7 @@
 <body class="bg-green-200">
     <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
         <div class="mb-4">
-            Pengeluaran Harian Afvrita Safara Candra <br><br>
+            Pengeluaran Harian Afvrita Hadiwijaya ga suka dipanggil sayang <br><br>
             <a href="{{ route('create') }}" class="justify-end bg-green-500 text-white px-4 py-2 rounded">+ Tambah
                 Pengeluaran</a>
         </div>
