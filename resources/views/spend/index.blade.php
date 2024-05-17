@@ -17,7 +17,7 @@
 <body class="bg-green-200">
     <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
         <div class="mb-4">
-            Pengeluaran Harian Afvrita Hadiwijaya ga suka dipanggil sayang <br><br>
+            Pengeluaran Harian Afvrita de Hadiwijaya <br><br>
             <a href="{{ route('create') }}" class="justify-end bg-green-500 text-white px-4 py-2 rounded">+ Tambah
                 Pengeluaran</a>
         </div>
@@ -56,8 +56,11 @@
                 @endforeach
             </tbody>
         </table>
+        <div class="mt-4">
+            {{ $spend->links() }}
+        </div>
     </div>
-    <div>Total : Rp. {{ $total }}</div>
+    <div id="totalAmount">Total: Rp. {{ $total }}</div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -101,8 +104,13 @@
                                 return `${year}-${month}-${day}`;
                             }
 
+                            // Calculate the total amount
+                            let totalAmount = 0;
+
                             // Populate table with new data
                             data.forEach((spend, index) => {
+                                totalAmount += spend.amount;
+
                                 const row = document.createElement('tr');
                                 row.className = index % 2 === 0 ?
                                     'bg-white dark:bg-gray-900 border-b dark:border-gray-700' :
@@ -119,6 +127,9 @@
                     `;
                                 tableBody.appendChild(row);
                             });
+
+                            // Update the total amount in the UI
+                            document.getElementById('totalAmount').textContent = `Total: Rp. ${totalAmount}`;
                         })
                         .catch(error => {
                             console.error('There was a problem with the fetch operation:', error);

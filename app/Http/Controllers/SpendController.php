@@ -15,7 +15,7 @@ class SpendController extends Controller
      */
     public function index()
     {
-        $spend = Spend::all();
+        $spend = Spend::paginate(20);
         $total = $spend->sum('amount');
         return view('spend.index', compact('spend', 'total'));
     }
