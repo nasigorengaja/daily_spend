@@ -56,12 +56,13 @@
                 @endforeach
             </tbody>
         </table>
+        {{-- untuk paginate
         <div class="mt-4">
             {{ $spend->links() }}
-        </div>
+        </div> --}}
     </div>
-    <div>Total Keseluruhan : Rp. {{ $total_all }}</div>
-    <div id="totalAmount">Total by filter : Rp. {{ $total }}</div>
+    {{-- <div>Total Keseluruhan : Rp. {{ $total_all }}</div> --}}
+    <div id="totalAmount">Total : Rp. {{ $total }}</div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
