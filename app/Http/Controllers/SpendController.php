@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\SpendsExport;
+use App\Imports\SpendsImport;
 use App\Models\Spend;
 use Carbon\Carbon;
 use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
 
 class SpendController extends Controller
 {
@@ -15,13 +19,16 @@ class SpendController extends Controller
      */
     public function index()
     {
-        //all
-        $spend = Spend::all();
+        $user_id = Auth::id();
+
+        // Ambil data spend berdasarkan user_id
+        $spend = Spend::where('user_id', $user_id)->get();
         $total = $spend->sum('amount');
 
-        //paginate
-        // $spend = Spend::paginate(20);
+        // Paginate (opsional, jika ingin menggunakan paginate)
+        // $spend = Spend::where('user_id', $user_id)->paginate(20);
         // $total = $spend->sum('amount');
+
         return view('spend.index', compact('spend', 'total'));
     }
 
@@ -43,11 +50,12 @@ class SpendController extends Controller
         ]);
 
         $spend = new Spend();
+        $spend->user_id = Auth::id();  // Set user_id dari pengguna yang sedang login
         $spend->name = $request->name;
         $spend->amount = $request->amount;
         $spend->save();
 
-        return redirect('/')->with('success', 'Data Spend has been added!');
+        return redirect('/spend')->with('success', 'Data Spend has been added!');
     }
 
     /**
@@ -58,33 +66,43 @@ class SpendController extends Controller
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(String $id)
     {
-        $spend = Spend::where('id', $id)->first();
+        $user_id = Auth::id();
+
+        // Ambil spend berdasarkan id dan user_id
+        $spend = Spend::where('id', $id)->where('user_id', $user_id)->first();
+
+        // Periksa apakah data spend ditemukan
+        if (!$spend) {
+            return redirect('/')->with('error', 'Data Spend not found or you do not have access.');
+        }
+
         return view('spend.edit', compact('spend'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request)
     {
-        $spend = Spend::find($request->id);
+        $user_id = Auth::id();
+
+        // Ambil spend berdasarkan id dan user_id
+        $spend = Spend::where('id', $request->id)->where('user_id', $user_id)->first();
+
+        // Periksa apakah data spend ditemukan
+        if (!$spend) {
+            return redirect('/spend')->with('error', 'Data Spend not found or you do not have access.');
+        }
+
         $spend->name = $request->name;
         $spend->amount = $request->amount;
         $spend->save();
 
-        return redirect('/')->with('success', 'Data Spend has been updated!');
+        return redirect('/spend')->with('success', 'Data Spend has been updated!');
     }
 
     public function getSpendData(Request $request)
     {
-        // $start = $request->query('start');
-        // $end = $request->query('end');
-
+        $user_id = Auth::id();
         $startDate = Carbon::parse($request->start);
         $endDate = Carbon::parse($request->end);
 
@@ -94,9 +112,29 @@ class SpendController extends Controller
 
         Log::info('Fetching spend data', ['start' => $startDate, 'end' => $end]);
 
-        $spend = Spend::whereBetween('created_at', [$startDate, $end])->get();
+        // Ambil spend berdasarkan user_id dan rentang tanggal
+        $spend = Spend::where('user_id', $user_id)
+            ->whereBetween('created_at', [$startDate, $end])
+            ->get();
 
         return response()->json($spend);
+    }
+
+    public function export()
+    {
+        $fileName = 'spends_' . Carbon::now()->englishMonth . '.xlsx';
+        return Excel::download(new SpendsExport, $fileName);
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx',
+        ]);
+
+        Excel::import(new SpendsImport, $request->file('file'));
+
+        return redirect('/spend')->with('success', 'Spends imported successfully!');
     }
 
 
