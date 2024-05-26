@@ -120,10 +120,24 @@ class SpendController extends Controller
         return response()->json($spend);
     }
 
-    public function export()
+    public function export(Request $request)
     {
+        $user_id = Auth::id();
+        $startDate = Carbon::parse($request->start);
+        $endDate = Carbon::parse($request->end);
+
+        $startDate->addDay();
+        $endDate->addDay();
+        $end = $endDate->endOfDay();
+
+        if ($startDate && $endDate) {
+            Log::info('Exporting with date range', ['start' => $startDate, 'end' => $end]);
+        } else {
+            Log::info('Exporting without date range');
+        }
+
         $fileName = 'spends_' . Carbon::now()->englishMonth . '.xlsx';
-        return Excel::download(new SpendsExport, $fileName);
+        return Excel::download(new SpendsExport($user_id, $startDate, $endDate), $fileName);
     }
 
     public function import(Request $request)

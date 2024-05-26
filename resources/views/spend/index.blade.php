@@ -18,14 +18,14 @@
     <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
         <div class="mb-4 ml-2">
             <?php
-                // Set timezone if needed
-                date_default_timezone_set('Asia/Jakarta');
-    
-                // Get current date
-                $day = date('j'); // Day without leading zero
-                $month = date('F'); // Full month name
-                $year = date('Y'); // Full year
-                echo "Hari ini $day $month $year";
+            // Set timezone if needed
+            date_default_timezone_set('Asia/Jakarta');
+            
+            // Get current date
+            $day = date('j'); // Day without leading zero
+            $month = date('F'); // Full month name
+            $year = date('Y'); // Full year
+            echo "Hari ini $day $month $year";
             ?> <br><br>
             <a href="{{ route('create') }}" class="justify-end bg-green-500 text-white px-4 py-2 rounded">+ Tambah
                 Pengeluaran</a>
@@ -35,25 +35,26 @@
                 placeholder="Select date range" />
             <button id="applyButton" class="bg-green-500 text-white px-4 py-2 rounded">Apply</button>
         </div>
-        <div class="mb-4 ml-2">
+        {{-- <div class="mb-4 ml-2">
             <label for="actionSelect" class="block text-sm font-medium text-gray-700">Choose Action:</label>
             <select id="actionSelect" class="bg-white border rounded p-2 mb-4">
                 <option value="export">Export</option>
                 <option value="import">Import</option>
             </select>
-            
+
             <div id="exportContainer">
-                <a href="{{ route('spends.export') }}" id="exportButton" class="bg-blue-500 text-white px-4 py-2 rounded">Export Spends</a>
+                <button id="exportButton" class="bg-blue-500 text-white px-4 py-2 rounded">Export Spends</button>
             </div>
-            
+
             <div id="importContainer" class="hidden">
-                <form action="{{ route('spends.import') }}" method="POST" enctype="multipart/form-data" class="inline-block">
+                <form action="{{ route('spends.import') }}" method="POST" enctype="multipart/form-data"
+                    class="inline-block">
                     @csrf
                     <input type="file" name="file" class="bg-white border rounded p-2">
                     <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded">Import Spends</button>
                 </form>
             </div>
-        </div>
+        </div> --}}
         <table id="spendTable" class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                 <tr>
@@ -72,7 +73,8 @@
                         <td class="px-6 py-4">{{ $loop->iteration }}</td>
                         <th scope="row"
                             class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                            {{ $s->name }}</th>
+                            {{ $s->name }}
+                        </th>
                         <td class="px-6 py-4">Rp. {{ $s->amount }}</td>
                         <td class="px-6 py-4">{{ optional($s->created_at)->format('Y-m-d') }}</td>
                         <td class="px-6 py-4">{{ optional($s->updated_at)->format('Y-m-d') }}</td>
@@ -84,37 +86,37 @@
                 @endforeach
             </tbody>
         </table>
-        {{-- untuk paginate
-        <div class="mt-4">
+        {{-- untuk paginate --}}
+        {{-- <div class="mt-4">
             {{ $spend->links() }}
         </div> --}}
+        <div id="totalAmount">Total : Rp. {{ $total }}</div>
     </div>
-    {{-- <div>Total Keseluruhan : Rp. {{ $total_all }}</div> --}}
-    <div id="totalAmount">Total : Rp. {{ $total }}</div>
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const actionSelect = document.getElementById('actionSelect');
-            const exportContainer = document.getElementById('exportContainer');
-            const importContainer = document.getElementById('importContainer');
-            const exportButton = document.getElementById('exportButton');
+        document.addEventListener('DOMContentLoaded', function() {
+            // const actionSelect = document.getElementById('actionSelect');
+            // const exportContainer = document.getElementById('exportContainer');
+            // const importContainer = document.getElementById('importContainer');
+            // const exportButton = document.getElementById('exportButton');
 
-            actionSelect.addEventListener('change', function () {
-                if (actionSelect.value === 'export') {
-                    importContainer.classList.add('hidden');
-                    exportContainer.classList.remove('hidden');
-                } else {
-                    exportContainer.classList.add('hidden');
-                    importContainer.classList.remove('hidden');
-                }
-            });
+            // actionSelect.addEventListener('change', function() {
+            //     if (actionSelect.value === 'export') {
+            //         importContainer.classList.add('hidden');
+            //         exportContainer.classList.remove('hidden');
+            //     } else {
+            //         exportContainer.classList.add('hidden');
+            //         importContainer.classList.remove('hidden');
+            //     }
+            // });
 
             flatpickr("#dateRangePicker", {
                 mode: "range",
-                dateFormat: "d/m/Y"
+                dateFormat: "Y-m-d"
             });
 
-            document.getElementById('applyButton').addEventListener('click', function () {
+            document.getElementById('applyButton').addEventListener('click', function() {
                 const dateRange = document.getElementById('dateRangePicker')._flatpickr.selectedDates;
                 if (dateRange.length === 2) {
                     const startDate = dateRange[0].toISOString().split('T')[0];
@@ -123,38 +125,40 @@
                     const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
                     fetch(`{{ route('get.spend.data') }}?start=${startDate}&end=${endDate}`, {
-                        headers: {
-                            'X-CSRF-TOKEN': token,
-                            'Accept': 'application/json',
-                        },
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok');
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        const tableBody = document.querySelector('#spendTable tbody');
-                        tableBody.innerHTML = '';
+                            headers: {
+                                'X-CSRF-TOKEN': token,
+                                'Accept': 'application/json',
+                            },
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            const tableBody = document.querySelector('#spendTable tbody');
+                            tableBody.innerHTML = '';
 
-                        function formatDate(dateString) {
-                            const date = new Date(dateString);
-                            const year = date.getFullYear();
-                            const month = String(date.getMonth() + 1).padStart(2, '0');
-                            const day = String(date.getDate()).padStart(2, '0');
-                            return `${year}-${month}-${day}`;
-                        }
+                            function formatDate(dateString) {
+                                const date = new Date(dateString);
+                                const year = date.getFullYear();
+                                const month = String(date.getMonth() + 1).padStart(2, '0');
+                                const day = String(date.getDate()).padStart(2, '0');
+                                return `${year}-${month}-${day}`;
+                            }
 
-                        let totalAmount = 0;
+                            let totalAmount = 0;
 
-                        data.forEach((spend, index) => {
-                            totalAmount += spend.amount;
+                            data.forEach((spend, index) => {
+                                totalAmount += spend.amount;
 
-                            const row = document.createElement('tr');
-                            row.className = index % 2 === 0 ? 'bg-white dark:bg-gray-900 border-b dark:border-gray-700' : 'bg-gray-50 dark:bg-gray-800 border-b dark:border-gray-700';
-                            row.innerHTML = `
-                                <td class="px-6 py-4">${spend.id}</td>
+                                const row = document.createElement('tr');
+                                row.className = index % 2 === 0 ?
+                                    'bg-white dark:bg-gray-900 border-b dark:border-gray-700' :
+                                    'bg-gray-50 dark:bg-gray-800 border-b dark:border-gray-700';
+                                row.innerHTML = `
+                                <td class="px-6 py-4">${index+1}</td>
                                 <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">${spend.name}</th>
                                 <td class="px-6 py-4">Rp. ${spend.amount}</td>
                                 <td class="px-6 py-4">${formatDate(spend.created_at)}</td>
@@ -163,18 +167,30 @@
                                     <a href="/edit/${spend.id}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
                                 </td>
                             `;
-                            tableBody.appendChild(row);
-                        });
+                                tableBody.appendChild(row);
+                            });
 
-                        document.getElementById('totalAmount').textContent = `Total: Rp. ${totalAmount}`;
-                    })
-                    .catch(error => {
-                        console.error('There was a problem with the fetch operation:', error);
-                    });
+                            document.getElementById('totalAmount').textContent =
+                                `Total: Rp. ${totalAmount}`;
+                        })
+                        .catch(error => {
+                            console.error('There was a problem with the fetch operation:', error);
+                        });
                 } else {
                     console.log('Please select a date range.');
                 }
             });
+
+            // exportButton.addEventListener('click', function() {
+            //     const dateRange = document.getElementById('dateRangePicker')._flatpickr.selectedDates;
+            //     let exportUrl = `{{ route('spends.export') }}`;
+            //     if (dateRange.length === 2) {
+            //         const startDate = dateRange[0].toISOString().split('T')[0];
+            //         const endDate = dateRange[1].toISOString().split('T')[0];
+            //         exportUrl += `?start=${startDate}&end=${endDate}`;
+            //     }
+            //     window.location.href = exportUrl;
+            // });
         });
     </script>
 </body>
