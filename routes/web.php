@@ -43,4 +43,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/edit/{id}', [SpendController::class, 'edit'])->name('get.edit.spend');
     Route::post('/edit/spend', [SpendController::class, 'update'])->name('post.edit.spend');
     Route::get('/get-spend-data', [SpendController::class, 'getSpendData'])->name('get.spend.data');
+
+    //delete
+    Route::post('/spends/delete', [SpendController::class, 'deleteSpendData'])->name('delete.spend.data');
 });

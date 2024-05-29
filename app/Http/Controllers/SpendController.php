@@ -120,6 +120,27 @@ class SpendController extends Controller
         return response()->json($spend);
     }
 
+    public function deleteSpendData(Request $request)
+    {
+        $user_id = Auth::id();
+        $startDate = Carbon::parse($request->start);
+        $endDate = Carbon::parse($request->end);
+
+        $startDate->addDay();
+        $endDate->addDay();
+        $end = $endDate->endOfDay();
+
+        if ($startDate && $end) {
+            Spend::where('user_id', $user_id)
+                ->whereBetween('created_at', [$startDate, $end])
+                ->delete();
+
+            return response()->json(['message' => 'Data pengeluaran berhasil dihapus']);
+        }
+
+        return response()->json(['message' => 'Rentang tanggal tidak valid'], 400);
+    }
+
     public function export(Request $request)
     {
         $user_id = Auth::id();

@@ -34,9 +34,10 @@
             <input id="dateRangePicker" class="block w-full p-2 border border-gray-300 rounded-md"
                 placeholder="Select date range" />
             <button id="applyButton" class="bg-green-500 text-white px-4 py-2 rounded">Apply</button>
+            <button id="deleteButton" class="bg-red-500 text-white px-4 py-2 rounded hidden">Delete</button>
         </div>
-        {{-- <div class="mb-4 ml-2">
-            <label for="actionSelect" class="block text-sm font-medium text-gray-700">Choose Action:</label>
+        <div class="mb-4 ml-2">
+            {{-- <label for="actionSelect" class="block text-sm font-medium text-gray-700">Choose Action:</label>
             <select id="actionSelect" class="bg-white border rounded p-2 mb-4">
                 <option value="export">Export</option>
                 <option value="import">Import</option>
@@ -44,17 +45,17 @@
 
             <div id="exportContainer">
                 <button id="exportButton" class="bg-blue-500 text-white px-4 py-2 rounded">Export Spends</button>
-            </div>
+            </div> --}}
 
-            <div id="importContainer" class="hidden">
+            {{-- <div id="importContainer" class="hidden">
                 <form action="{{ route('spends.import') }}" method="POST" enctype="multipart/form-data"
                     class="inline-block">
                     @csrf
                     <input type="file" name="file" class="bg-white border rounded p-2">
                     <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded">Import Spends</button>
                 </form>
-            </div>
-        </div> --}}
+            </div> --}}
+        </div>
         <table id="spendTable" class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                 <tr>
@@ -63,7 +64,6 @@
                     <th scope="col" class="px-6 py-3">Nominal</th>
                     <th scope="col" class="px-6 py-3">Tgl kegiatan</th>
                     <th scope="col" class="px-6 py-3">Tgl edit</th>
-                    <th scope="col" class="px-6 py-3">Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -78,10 +78,6 @@
                         <td class="px-6 py-4">Rp. {{ $s->amount }}</td>
                         <td class="px-6 py-4">{{ optional($s->created_at)->format('Y-m-d') }}</td>
                         <td class="px-6 py-4">{{ optional($s->updated_at)->format('Y-m-d') }}</td>
-                        <td class="px-6 py-4">
-                            <a href="{{ route('get.edit.spend', $s->id) }}"
-                                class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
-                        </td>
                     </tr>
                 @endforeach
             </tbody>
@@ -100,6 +96,9 @@
             // const exportContainer = document.getElementById('exportContainer');
             // const importContainer = document.getElementById('importContainer');
             // const exportButton = document.getElementById('exportButton');
+            const deleteButton = document.getElementById('deleteButton');
+
+            let currentDateRange = [];
 
             // actionSelect.addEventListener('change', function() {
             //     if (actionSelect.value === 'export') {
@@ -121,6 +120,7 @@
                 if (dateRange.length === 2) {
                     const startDate = dateRange[0].toISOString().split('T')[0];
                     const endDate = dateRange[1].toISOString().split('T')[0];
+                    currentDateRange = [startDate, endDate];
 
                     const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
@@ -163,15 +163,13 @@
                                 <td class="px-6 py-4">Rp. ${spend.amount}</td>
                                 <td class="px-6 py-4">${formatDate(spend.created_at)}</td>
                                 <td class="px-6 py-4">${formatDate(spend.updated_at)}</td>
-                                <td class="px-6 py-4">
-                                    <a href="/edit/${spend.id}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
-                                </td>
                             `;
                                 tableBody.appendChild(row);
                             });
 
                             document.getElementById('totalAmount').textContent =
                                 `Total: Rp. ${totalAmount}`;
+                            deleteButton.classList.remove('hidden');
                         })
                         .catch(error => {
                             console.error('There was a problem with the fetch operation:', error);
@@ -181,18 +179,48 @@
                 }
             });
 
-            // exportButton.addEventListener('click', function() {
-            //     const dateRange = document.getElementById('dateRangePicker')._flatpickr.selectedDates;
-            //     let exportUrl = `{{ route('spends.export') }}`;
-            //     if (dateRange.length === 2) {
-            //         const startDate = dateRange[0].toISOString().split('T')[0];
-            //         const endDate = dateRange[1].toISOString().split('T')[0];
-            //         exportUrl += `?start=${startDate}&end=${endDate}`;
-            //     }
-            //     window.location.href = exportUrl;
-            // });
+            deleteButton.addEventListener('click', function() {
+                if (currentDateRange.length === 2) {
+                    if (confirm(
+                            'Apakah Anda yakin ingin menghapus pengeluaran untuk rentang tanggal ini?')) {
+                        const [startDate, endDate] = currentDateRange;
+                        const token = document.querySelector('meta[name="csrf-token"]').getAttribute(
+                            'content');
+
+                        fetch(`{{ route('delete.spend.data') }}`, {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': token,
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    start: startDate,
+                                    end: endDate
+                                }),
+                            })
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Network response was not ok');
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                // Refresh the table after deletion
+                                document.getElementById('applyButton').click();
+                                alert(data.message);
+                            })
+                            .catch(error => {
+                                console.error('There was a problem with the delete operation:', error);
+                            });
+                    }
+                } else {
+                    alert('Please select a date range to delete.');
+                }
+            });
         });
     </script>
+
 </body>
 
 </html>
