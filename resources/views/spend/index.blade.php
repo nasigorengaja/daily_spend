@@ -64,6 +64,7 @@
                     <th scope="col" class="px-6 py-3">Nominal</th>
                     <th scope="col" class="px-6 py-3">Tgl kegiatan</th>
                     <th scope="col" class="px-6 py-3">Tgl edit</th>
+                    <th scope="col" class="px-6 py-3">Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -78,6 +79,10 @@
                         <td class="px-6 py-4">Rp. {{ $s->amount }}</td>
                         <td class="px-6 py-4">{{ optional($s->created_at)->format('Y-m-d') }}</td>
                         <td class="px-6 py-4">{{ optional($s->updated_at)->format('Y-m-d') }}</td>
+                        <td class="px-6 py-4">
+                            <a href="{{ route('get.edit.spend', $s->id) }}"
+                                class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
+                        </td>
                     </tr>
                 @endforeach
             </tbody>
@@ -163,6 +168,9 @@
                                 <td class="px-6 py-4">Rp. ${spend.amount}</td>
                                 <td class="px-6 py-4">${formatDate(spend.created_at)}</td>
                                 <td class="px-6 py-4">${formatDate(spend.updated_at)}</td>
+                                <td class="px-6 py-4">
+                                    <a href="/edit/${spend.id}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
+                                </td>
                             `;
                                 tableBody.appendChild(row);
                             });
